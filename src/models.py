@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
-# from flask_sqlalchemy.orm import relationship
+from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 db = SQLAlchemy()
+
 
 class User(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
@@ -30,7 +32,7 @@ class Planets(db.Model):
 
 
     def __repr__(self):
-        return '<Planets %r>' % self.nombre
+        return '<Planets %r>' % self.id
 
     def serialize(self):
         return {
@@ -83,12 +85,12 @@ class Vehiculos(db.Model):
 
     def serialize(self):
         return {
-            "id":              self.id,
-            "cost_in_credits": self.cost_in_credits,
-            "length ":         self.length ,
-            "manufacturer":    self.manufacturer,
-            "crew ":           self.crew ,
-            "passengers ":     self.passengers ,
+            "id":                  self.id,
+            "cost_in_credits":     self.cost_in_credits,
+            "length ":             self.length ,
+            "manufacturer":        self.manufacturer,
+            "crew ":               self.crew ,
+            "passengers ":         self.passengers ,
              }
 
 
@@ -101,6 +103,8 @@ class Naves(db.Model):
     crew              = db.Column(db.String(80), unique=False, nullable=False)
     passengers        = db.Column(db.String(80), unique=False, nullable=False)
     model             = db.Column(db.String(80), unique=False, nullable=False)
+
+    
         
         
 
@@ -110,12 +114,12 @@ class Naves(db.Model):
 
     def serialize(self):
         return {
-            "id":              self.id,
-            "cost_in_credits": self.cost_in_credits,
-            "length ":         self.length ,
-            "manufacturer":    self.manufacturer,
-            "crew ":           self.crew ,
-            "passengers ":     self.passengers ,
+            "id":                 self.id,
+            "cost_in_credits":    self.cost_in_credits,
+            "length ":            self.length ,
+            "manufacturer":       self.manufacturer,
+            "crew ":              self.crew ,
+            "passengers ":        self.passengers ,
              }
 
 
@@ -127,17 +131,28 @@ class Favoritos(db.Model):
     planets_id        = db.Column(db.Integer, db.ForeignKey("planets.id"))
     vehiculos_id      = db.Column(db.Integer, db.ForeignKey("vehiculos.id"))
     naves_id          = db.Column(db.Integer, db.ForeignKey("naves.id"))
+
+
+    planets =     db.relationship(Planets)
+    personajes =  db.relationship(Personajes)
+    naves =       db.relationship(Naves)
+    user =        db.relationship(User)
+    vehiculos =   db.relationship(Vehiculos)
+
+
+
     def __repr__(self):
-        return '<Vehiculos %r>' % self.id
+        return '<Favoritos %r>' % self.id
 
     def serialize(self):
         return {
             "id":                      self.id,
             "user_id":                 self.user_id,
-            "user_personajes ":        self.personajes_id ,
-            "user_planetas":           self.planetas_id,
-            "user_vehiculos ":         self.vehiculos_id,
-            "user_naves ":             self.naves_id ,
+            "personajes_id ":          self.personajes_id ,
+            "planetas_id":             self.planets_id,
+            "vehiculos_id ":           self.vehiculos_id,
+            "naves_id ":               self.naves_id ,
+           
              }
 
 

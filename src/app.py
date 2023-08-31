@@ -9,6 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User,Planets,Personajes,Vehiculos,Naves,Favoritos
+import json
 
 #from models import Person
 
@@ -26,6 +27,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
+
 setup_admin(app)
 
 # Handle/serialize errors like a JSON object
@@ -116,6 +118,23 @@ def un_personaje(personaje_id):
 
 
     return jsonify( unpersonaje.serialize()), 200
+
+
+
+@app.route('/personajes', methods=['POST'])
+def create_personaje():
+    request_body = json.loads(request.data)
+
+    existing_personaje = Personajes.query.filter_by(**request_body).first()
+
+    if existing_personaje:
+        return jsonify({"message": "El personaje ya existe"}), 400
+
+    new_personaje = Personajes(**request_body)
+    db.session.add(new_personaje)
+    db.session.commit()
+    
+    return jsonify(new_personaje.serialize()), 200
         
     
 
@@ -135,6 +154,20 @@ def handle_vehiculos():
 
 
 
+
+@app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
+def un_vehiculos(vehiculos_id):
+
+    unvehiculos = Vehiculos.query.filter_by(id=vehiculos_id).first()
+
+    if unvehiculos is None:
+        return { 'msj' : 'no existe'}, 404
+
+
+    return jsonify( unvehiculos.serialize()), 200
+
+
+
     """-----------------------------------------------_<Naves>_-------------------------------------"""
 
 
@@ -151,9 +184,76 @@ def handle_naves():
         return { 'msj' : 'no hay naves'}, 404
 
 
-    return jsonify(navesList), 200
+    
+
+
+@app.route('/naves/<int:naves_id>', methods=['GET'])
+def un_naves(naves_id):
+
+    unnaves = Naves.query.filter_by(id=naves_id).first()
+
+    if unnaves is None:
+        return { 'msj' : 'no existe'}, 404
+
+
+    return jsonify( unnaves.serialize()), 200
+
 
 
 
 """-----------------------------------------------_<Naves>_-------------------------------------"""
     
+
+"""-----------------------------------------------_<Favoritos>_-------------------------------------"""
+
+
+
+
+@app.route('/favoritos', methods=['GET'])
+def handle_():
+
+    allfavoritos = Favoritos.query.all()
+    favoritosList = list(map(lambda p: p.serialize(),allfavoritos))
+
+    if favoritosList == []:
+        return { 'msj' : 'no hay favoritos'}, 404
+    return jsonify(favoritosList)
+        
+@app.route('/user/favoritos', methods=['GET'])
+def un_favoritos():
+
+
+
+# user_id =  get_user_id()
+#    user_favoritos =favoritos.query.filter
+#    user_favoritos = favoritos.query.filter.by_(user-id=user_id).all())
+# serialized_favorites = [favorite.serialize() for favorite in user_favorites]
+   
+#  return jsonify(serialized_favorites)
+
+    allfavoritos = Favoritos.query.all()
+    favoritosList = list(map(lambda p: p.serialize(),allfavoritos))
+
+
+    
+if favoritosList == []:
+    return { 'msj' : 'no existe'}, 404
+
+return jsonify( un_favoritos.serialize()), 200
+
+
+
+@app.route('/favoritos', methods=['POST'])
+def create_favoritos():
+    request_body = json.loads(request.data)
+
+    existing_favoritos = Favoritos.query.filter_by(**request_body).first()
+
+    if existing_favoritos:
+        return jsonify({"message": "El favoritos ya existe"}), 400
+
+    new_favoritos = Favoritos(**request_body)
+    db.session.add(new_favoritos)
+    db.session.commit()
+    
+    return jsonify(new_favoritos.serialize()), 200
