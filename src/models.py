@@ -9,7 +9,7 @@ class User(db.Model):
     email         = db.Column(db.String(120), unique=True, nullable=False)
     password      = db.Column(db.String(80), unique=False, nullable=False)
     is_active     = db.Column(db.Boolean(), unique=False, nullable=False)
-
+    
 
     def __repr__(self):
         return '<User %r>' % self.id
@@ -43,7 +43,7 @@ class Planets(db.Model):
             "gravedad":     self.gravedad,
             "poblacion":    self.poblacion,
             # do not serialize the password, its a security breach
-
+            "usuario_favoritos":list(map(lambda item: item.serialize(),self.usuario_favoritos))
 
         }
 class Personajes(db.Model):
@@ -148,10 +148,14 @@ class Favoritos(db.Model):
         return {
             "id":                      self.id,
             "user_id":                 self.user_id,
-            "personajes_id ":          self.personajes_id ,
-            "planetas_id":             self.planets_id,
-            "vehiculos_id ":           self.vehiculos_id,
-            "naves_id ":               self.naves_id ,
+           
+            "personajes_id": None if self.personajes is None else self.personajes.serialize(),
+           
+            " planets_id": None if self. planets is None else self. planets.serialize(),
+            
+            "vehiculos _id": None if self. vehiculos is None else self. vehiculos.serialize(),
+           
+            "naves _id": None if self. naves is None else self. naves.serialize(),
            
              }
 

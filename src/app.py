@@ -53,10 +53,6 @@ def handle_user():
 
    
 
-# this only runs if `$ python src/app.py` is executed
-if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=PORT, debug=False)
 
 """-----------------------------------------------_<Planetas>_-------------------------------------"""
 
@@ -73,9 +69,9 @@ def handle_planetas():
     return jsonify(planetasList), 200
 
 @app.route('/planeta/<int:planeta_id>', methods=['GET'])
-def un_planeta(planeta_id):
+def un_planeta(planets_id):
 
-    unplaneta =Planets.query.filter_by(id=planeta_id).first()
+    unplaneta =Planets.query.filter_by(id=planets_id).first()
 
     if unplaneta is None:
         return { 'msj' : 'no existe'}, 404
@@ -106,7 +102,7 @@ def handle_personajes():
 
     if personajesList == []:
         return { 'msj' : 'no hay personajes'}, 404
-    return jsonify(personajesList)
+    return jsonify(personajesList),200
         
 @app.route('/personajes/<int:personaje_id>', methods=['GET'])
 def un_personaje(personaje_id):
@@ -141,67 +137,64 @@ def create_personaje():
     
 """-----------------------------------------------_<Vehiculos>_-------------------------------------"""
 
-@app.route('/vehiculos', methods=['GET'])
-def handle_vehiculos():
+# @app.route('/vehiculos', methods=['GET'])
+# def handle_vehiculos():
 
-    allvehiculos = Vehiculos.query.all()
-    vehiculosList = list(map(lambda p: p.serialize(),allvehiculos))
+#     allvehiculos = Vehiculos.query.all()
+#     vehiculosList = list(map(lambda p: p.serialize(),allvehiculos))
 
-    if vehiculosList == []:
-        return { 'msj' : 'no hay vehiculos'}, 404
+#     if vehiculosList == []:
+#         return { 'msj' : 'no hay vehiculos'}, 404
     
-    return jsonify(vehiculosList), 200
+#     return jsonify(vehiculosList), 200
 
 
 
 
-@app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
-def un_vehiculos(vehiculos_id):
+# @app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
+# def un_vehiculos(vehiculos_id):
 
-    unvehiculos = Vehiculos.query.filter_by(id=vehiculos_id).first()
+#     unvehiculos = Vehiculos.query.filter_by(id=vehiculos_id).first()
 
-    if unvehiculos is None:
-        return { 'msj' : 'no existe'}, 404
-
-
-    return jsonify( unvehiculos.serialize()), 200
+#     if unvehiculos is None:
+#         return { 'msj' : 'no existe'}, 404
 
 
-
-    """-----------------------------------------------_<Naves>_-------------------------------------"""
-
-
-
-    
-
-@app.route('/naves', methods=['GET'])
-def handle_naves():
-
-    allnaves = Naves.query.all()
-    navesList = list(map(lambda p: p.serialize(),allnaves))
-
-    if navesList == []:
-        return { 'msj' : 'no hay naves'}, 404
-
-
-    
-
-
-@app.route('/naves/<int:naves_id>', methods=['GET'])
-def un_naves(naves_id):
-
-    unnaves = Naves.query.filter_by(id=naves_id).first()
-
-    if unnaves is None:
-        return { 'msj' : 'no existe'}, 404
-
-
-    return jsonify( unnaves.serialize()), 200
-
-
-
-
+#     return jsonify( unvehiculos.serialize()), 200
 """-----------------------------------------------_<Naves>_-------------------------------------"""
+
+
+
+    
+
+# @app.route('/naves', methods=['GET'])
+# def handle_naves():
+
+#     allnaves = Naves.query.all()
+#     navesList = list(map(lambda p: p.serialize(),allnaves))
+
+#     if navesList == []:
+#         return { 'msj' : 'no hay naves'}, 404
+
+
+    
+
+
+# @app.route('/naves/<int:naves_id>', methods=['GET'])
+# def un_naves(naves_id):
+
+#     unnaves = Naves.query.filter_by(id=naves_id).first()
+
+#     if unnaves is None:
+#         return { 'msj' : 'no existe'}, 404
+
+
+#     return jsonify( unnaves.serialize()), 200
+
+
+
+
+
     
 
 """-----------------------------------------------_<Favoritos>_-------------------------------------"""
@@ -209,19 +202,16 @@ def un_naves(naves_id):
 
 
 
-@app.route('/favoritos', methods=['GET'])
-def handle_():
+@app.route('<int:user_id>/favoritos', methods=['GET'])
+def handle_favoritos(user_id):
 
-    allfavoritos = Favoritos.query.all()
+    allfavoritos = Favoritos.query.filter_by(user_id=user_id).all()
     favoritosList = list(map(lambda p: p.serialize(),allfavoritos))
 
-    if favoritosList == []:
-        return { 'msj' : 'no hay favoritos'}, 404
-    return jsonify(favoritosList)
+    # if favoritosList == []:
+    #     return { 'msj' : 'no hay favoritos'}, 404
         
-@app.route('/user/favoritos', methods=['GET'])
-def un_favoritos():
-
+    return jsonify({ 'msj' : favoritosList}), 200
 
 
 # user_id =  get_user_id()
@@ -236,10 +226,29 @@ def un_favoritos():
 
 
     
-if favoritosList == []:
-    return { 'msj' : 'no existe'}, 404
+# if favoritosList == []:
+#     return { 'msj' : 'no existe'}, 404
+    response_body = {"msg": "un favorito"}
+# return jsonify( un_favoritos.serialize()), 200
+    return jsonify(response_body), 200
 
-return jsonify( un_favoritos.serialize()), 200
+
+
+@app.route('/favoritos', methods=['GET'])
+def create_favoritos():
+    request_body = json.loads(request.data)
+
+    existing_favoritos = Favoritos.query.filter_by(**request_body).first()
+
+    if existing_favoritos:
+        return jsonify({"message": "El favoritos ya existe"}), 400
+
+    new_favoritos = Favoritos(**request_body)
+    db.session.add(new_favoritos)
+    db.session.commit()
+    
+    return jsonify(new_favoritos.serialize()), 200
+
 
 
 
@@ -257,3 +266,7 @@ def create_favoritos():
     db.session.commit()
     
     return jsonify(new_favoritos.serialize()), 200
+
+if __name__ == '__main__':
+    PORT = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=PORT, debug=False)
