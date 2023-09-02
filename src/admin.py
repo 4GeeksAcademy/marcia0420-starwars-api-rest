@@ -1,6 +1,6 @@
 import os
 from flask_admin import Admin
-
+from flask_sqlalchemy import SQLAlchemy
 from flask_admin.contrib.sqla import ModelView
 from models import db, User,Planets,Personajes,Vehiculos,Naves,Favoritos
 
