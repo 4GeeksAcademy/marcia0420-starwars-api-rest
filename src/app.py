@@ -14,8 +14,7 @@ import json
 #from models import Person
 
 
-app = Flask(__name__)
-app.url_map.strict_slashes = False
+
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -54,9 +53,6 @@ def get_users():
     users = User.query.all()
     users= list(map(lambda user : user.serialize(),users))
     return { 'msj' : 'no hay usuarios'}, 404
-    
-
-
     return jsonify(users), 200
 
 @app.route('/user/<int:user_id>', methods=['GET'])
@@ -109,7 +105,7 @@ def crear_un_planeta():
     db.session.add(nuevo_planeta)
     db.session.commit()
     
-    return jsonify({"msg":"planeta agregado con exito"}), 200
+    return jsonify(nuevo_planeta.serialize()), 200
         
 
 
@@ -127,26 +123,28 @@ def handle_personajes():
 
 
 
-@app.route('/personajes/<int:personaje_id>', methods=['GET'])
-def un_personaje(personaje_id):
+@app.route('/personajes/<int:personajes_id>', methods=['GET'])
+def un_personajes(personaje_id):
 
-    unpersonaje = Personajes.query.filter_by(id=personaje_id).first()
+    unpersonajes = Personajes.query.filter_by(id=personaje_id).first()
 
-    if unpersonaje is None:
+    if unpersonajes is None:
         return { 'msj' : 'no existe'}, 404
 
 
-    return jsonify( unpersonaje.serialize()), 200
+    return jsonify( unpersonajes.serialize()), 200
 
 
-@app.route('/personajes/<int:id>', methods=['DELETE'])
-def delete_personajes(id):
+@app.route('/personajes/<int:personajes_id>', methods=['DELETE'])
+def delete_personajes(personajes_id):
 
-    personajes = Personajes.query.get(id)
-    personajes.delete()
-    return jsonify({ "msj": " Personajes DELETED" }), 200
+    personajes = Personajes.query.filter_by(id=personajes_id).first()
+    if personajes:
+        db.session.delete(personajes)
+        db.session.commit()
+        return jsonify({"msj":"Personajes DELETED"}), 200
     
-    # return { 'msj' : 'no hay personajes'}, 404
+    return { 'msj' : 'no hay personajes'}, 404
 
     # return jsonify(personajesList),200
         
@@ -159,7 +157,7 @@ def create_personaje():
     existing_personaje = Personajes.query.filter_by(**request_body).first()
 
     if existing_personaje:
-        return jsonify({"message": "El personaje ya existe"}), 400
+        return jsonify({"msj": "El personaje ya existe"}), 400
 
     new_personaje = Personajes(**request_body)
     db.session.add(new_personaje)
@@ -173,16 +171,20 @@ def create_personaje():
 # Vehiculos
 
     
-@app.route('/vehiculos', methods=['GET'])
-def get_vehiculos():
-    allvehiculos = vehiculos.query.all()
-    allvehiculos = list(map(lambda vehiculos: vehiculos.serialize(),vehiculos))
-    return jsonify(vehiculos), 200
+# @app.route('/vehiculos', methods=['GET'])
+# def get_vehiculos():
 
-@app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
-def get_vehiculos_id(vehiculos_id):
-    vehiculo = vehiculos.query.get(vehiculos_id)
-    vehiculo = vehiculos.serialize()
+#     allvehiculos = vehiculos.query.all()
+#     allvehiculos = list(map(lambda vehiculos: vehiculos.serialize(),vehiculos))
+
+#     return jsonify(vehiculos), 200
+
+# @app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
+# def get_vehiculos_id(vehiculos_id):
+
+#     vehiculo = vehiculos.query.get(vehiculos_id)
+#     vehiculo = vehiculos.serialize()
+
     return jsonify(vehiculo), 200
 
 @app.route('/vehiculos/<int:id>', methods=['DELETE'])
@@ -264,7 +266,7 @@ def crear_un_naves():
     db.session.add(nuevo_naves)
     db.session.commit()
     
-    return jsonify({"msg":"nave agregado con exito"}), 200
+    return jsonify({"msj":"nave agregado con exito"}), 200
 
 
 
@@ -277,174 +279,90 @@ def crear_un_naves():
 @app.route('/favoritos', methods=['GET'])
 def get_favoritos():
     favoritos = Favoritos.query.all()
-    favoritos = list(map(lambda favorite: favorios.serialize(), favoritos))
-    return jsonify(favoritos), 200
+    favoritos = list(map(lambda favoritos: favoritos.serialize(), favoritos))
+    if favoritos == [] :
+        return ({ "msj": "no hay usuario" }), 404
+    return favoritos, 200
+
 
 @app.route('/favoritos/<int:id>', methods=['GET'])
 def select_fav(id):
-    favorito = Favorite.query.filter_by(user_id = id).all()
-    favoritos_user = [favoritos.serialize() for favoritos in favorito]
+    favoritos = Favoritos.query.filter_by(user_id = id).all()
+    favoritos_user = [favoritos.serialize() for favoritos in favoritos]
     return jsonify(favoritos_user), 200
 
 @app.route('/favoritos', methods=['POST'])
 def new_favoritos():  
     
     datos = request.get_json()
-    favorito = Favoritos()
-    favorito.user_id = datos['user_id']
-    favorito.people_id = datos['personajes_id']
-    favorito.planet_id = datos['planet_id']
-    favorito.vehiculos_id = datos['vehiculos_id']
-    favorito.save()
+    favoritos = Favoritos()
+    favoritos.user_id = datos['user_id']
+    favoritos.people_id = datos['personajes_id']
+    favoritos.planet_id = datos['planet_id']
+    favoritos.vehiculos_id = datos['vehiculos_id']
+    favoritos.vaves_id = datos['naves_id']
+    favoritos.save()
     return jsonify(favoritos.serialize()), 201
 
 @app.route('/favorite/people', methods=['POST'])
 def new_favoritepeople(): 
     datos = request.get_json()
-    favorite = Favorite()
-    favorite.user_id = datos['user_id']
-    favorite.people_id = datos['people_id']
-    favorite.save()
-    return jsonify(favorite.serialize()), 201
+    favoritos = Favoritos()
+    favoritos.user_id = datos['user_id']
+    favoritos.people_id = datos['people_id']
+    favoritos.save()
+    return jsonify(favoritos.serialize()), 201
 
-@app.route('/favorite/planet', methods=['POST'])
-def new_favoriteplanet(): 
+@app.route('/favoritos/planet', methods=['POST'])
+def new_favoritosplanet(): 
     datos = request.get_json()
-    favorite = Favorite()
-    favorite.user_id = datos['user_id']
-    favorite.planet_id = datos['planet_id']
-    favorite.save()
-    return jsonify(favorite.serialize()), 201
+    favoritos = Favoritos()
+    favoritos.user_id = datos['user_id']
+    favoritos.planet_id = datos['planet_id']
+    favoritos.save()
+    return jsonify(favoritos.serialize()), 201
 
-@app.route('/favorite/starships', methods=['POST'])
-def new_favoritestarships(): 
+@app.route('/favoritos/naves', methods=['POST'])
+def new_favoritosnaves(): 
     datos = request.get_json()
-    favorite = Favorite()
-    favorite.user_id = datos['user_id']
-    favorite.starships_id = datos['starships_id']
-    favorite.save()
-    return jsonify(favorite.serialize()), 201
+    favoritos = Favoritos()
+    favoritos.user_id = datos['user_id']
+    favoritos.naves_id = datos['naves_id']
+    favoritos.save()
+    return jsonify(favoritos.serialize()), 201
    
-@app.route('/favorite/planet/<int:id>', methods=['DELETE'])
-def delete_favoriteplanet(id):
-    favorito = Favorite.query.filter_by(planet_id = id).first()
-    favorito.delete()
-    return jsonify({ "message": "FavPlanet DELETED" }), 200
+@app.route('/favoritos/<int:user_id>/planet/<int:planet_id>', methods=['DELETE'])
+def delete_favoritosplanet(planet_id, user_id):
+    favorito = Favoritos.query.filter_by(planet_id=planet_id,user_id=user_id).first()
+    if favorito: 
+        db.session.delete(favorito)
+        db.session.commit()
+        return jsonify({ "msj": "FavPlanet DELETED" }), 200
 
-@app.route('/favorite/people/<int:id>', methods=['DELETE'])
-def delete_favoritepeople(id):
-    favorito = Favorite.query.filter_by(people_id = id).first()
-    favorito.delete()
-    return jsonify({ "message": "FavPeople DELETED" }), 200
+@app.route('/favoritos/<int:user_id>/personajes/<int:personaje_id>', methods=['DELETE'])
+def delete_favoritospersonajes(user_id, id):
+    favoritos = Favoritos.query.filter_by(personajes_id =id,user_id =user_id).first()
+    if favoritos:
+        db.session.delete(favoritos)
+        db.session.commit()
+        return jsonify({ "msj": "personajes DELETED" }), 200
 
-@app.route('/favorite/starships/<int:id>', methods=['DELETE'])
-def delete_favoritestarship(id):
-    favorito = Favorite.query.filter_by(starships_id = id).first()
-    favorito.delete()
-    return jsonify({ "message": "FavStarship DELETED" }), 200
+@app.route('/favoritos/naves/<int:id>', methods=['DELETE'])
+def delete_favoritosnaves(id):
+    favoritos = Favoritos.query.filter_by(naves_id = id).first()
+    favoritos.delete()
+    return jsonify({ "msj": "naves DELETED" }), 200
 ## ALL Favorites
 
 
 
 # this only runs if `$ python src/app.py` is executed
-if _name_ == '_main_':
+if __name__ == '_main_':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
 
 
 
 
-# @app.route('/user/<int:user_id>/favoritos', methods=['GET'])
-# def handle_favoritos(user_id):
 
-#     allfavoritos = Favoritos.query.filter_by(user_id=user_id).all()
-#     favoritosList = list(map(lambda p: p.serialize(),allfavoritos))
-
-#     # if favoritosList == []:
-#     #     return { 'msj' : 'no hay favoritos'}, 404
-        
-#     return jsonify({ 'msj' : favoritosList}), 200
-
-
-# # user_id =  get_user_id()
-# #    user_favoritos =favoritos.query.filter
-# #    user_favoritos = favoritos.query.filter.by_(user-id=user_id).all())
-# # serialized_favorites = [favorite.serialize() for favorite in user_favorites]
-   
-# #  return jsonify(serialized_favorites)
-
-#     allfavoritos = Favoritos.query.all()
-#     favoritosList = list(map(lambda p: p.serialize(),allfavoritos))
-
-
-    
-# # if favoritosList == []:
-# #     return { 'msj' : 'no existe'}, 404
-#     response_body = {"msg": "un favorito"}
-# # return jsonify( un_favoritos.serialize()), 200
-#     return jsonify(response_body), 200
-
-
-
-# @app.route('/favoritos', methods=['GET'])
-# def obtener_favoritos():
-#     request_body = json.loads(request.data)
-
-#     existing_favoritos = Favoritos.query.filter_by(**request_body).first()
-
-#     if existing_favoritos:
-#         return jsonify({"message": "El favoritos ya existe"}), 400
-
-#     new_favoritos = Favoritos(**request_body)
-#     db.session.add(new_favoritos)
-#     db.session.commit()
-    
-#     return jsonify(new_favoritos.serialize()), 200
-
-
-
-
-# @app.route('/favoritos', methods=['POST'])
-# def create_favoritos():
-#     request_body = json.loads(request.data)
-
-#     existing_favoritos = Favoritos.query.filter_by(**request_body).first()
-
-#     if existing_favoritos:
-#         return jsonify({"message": "El favoritos ya existe"}), 400
-
-#     new_favoritos = Favoritos(**request_body)
-#     db.session.add(new_favoritos)
-#     db.session.commit()
-
-
-# #    // crear usuario //
-#     'https://3001-jade-macaw-kqnntmd8.ws-us03.gitpod.io/user' \
-    
-#     return jsonify(new_favoritos.serialize()), 200
-
-
-
-# @app.route('/starships', methods=['GET'])
-# def get_starships():
-#     starshipses = Starships.query.all()
-#     starshipses = list(map(lambda starships: starships.serialize(), starshipses))
-#     return jsonify(starshipses), 200
-
-# @app.route('/starships/<int:starships_id>', methods=['GET'])
-# def get_starships_id(starships_id):
-#     starship = Starships.query.get(starships_id)
-#     starship = starship.serialize()
-#     return jsonify(starship), 200
-
-# @app.route('/starships/<int:id>', methods=['DELETE'])
-# def delete_starships(id):
-#     starship = Starships.query.get(id)
-#     starship.delete()
-#     return jsonify({ "message": "Starship DELETED" }), 200
-
-
-#     if __name__ == '__main__':
-#     PORT = int(os.environ.get('PORT', 3000))
-#     app.run(host='0.0.0.0', port=PORT, debug=False)
 

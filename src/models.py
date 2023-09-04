@@ -61,7 +61,7 @@ class Personajes(db.Model):
 
 
     def __repr__(self):
-        return '<Personajes %r>' % self.nombre
+        return '<Personajes %r>' % self.id
 
     def serialize(self):
         return {
@@ -85,7 +85,7 @@ class Vehiculos(db.Model):
 
 
     def __repr__(self):
-        return '<Vehiculos %r>' % self.manufacturer
+        return '<Vehiculos %r>' % self.id
 
     def serialize(self):
         return {
@@ -114,7 +114,7 @@ class Naves(db.Model):
 
 
     def __repr__(self):
-        return '<Vehiculos %r>' % self.manufacturer
+        return '<Vehiculos %r>' % self.id
 
     def serialize(self):
         return {
@@ -151,15 +151,16 @@ class Favoritos(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+
             "user_id": self.user_id,
            
-            "personajes_id": None if self.personajes is None else self.personajes.serialize(),
+            "personajes": None if self.personajes is None else self.personajes.serialize(),
            
-            " planets_id": None if self. planets is None else self. planets.serialize(),
+            "planets": None if self.planets is None else self.planets.serialize(),
             
-            "vehiculos _id": None if self. vehiculos is None else self. vehiculos.serialize(),
+            "vehiculos": None if self.vehiculos is None else self.vehiculos.serialize(),
            
-            "naves _id": None if self. naves is None else self. naves.serialize(),
+            "naves": None if self.naves is None else self.naves.serialize(),
            
              }
 
