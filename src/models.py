@@ -20,7 +20,8 @@ class User(db.Model):
         return {
             "id":    self.id,
             "email": self.email,
-            "name ": self.name
+            "password": self.password,
+            "is_active": self.is_active,
             # do not serialize the password, its a security breach
         }
 
@@ -46,7 +47,7 @@ class Planets(db.Model):
             "gravedad": self.gravedad,
             "poblacion": self.poblacion,
             # do not serialize the password, its a security breach
-            "usuario_favoritos":list(map(lambda item: item.serialize(),self.usuario_favoritos))
+           # "usuario_favoritos":list(map(lambda item: item.serialize(),self.usuario_favoritos))
 
         }
     

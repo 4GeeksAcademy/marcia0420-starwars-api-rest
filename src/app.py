@@ -50,16 +50,30 @@ def sitemap():
 @app.route('/user', methods=['GET'])
 def get_users():
 
-    users = User.query.all()
-    users= list(map(lambda user : user.serialize(),users))
-    return { 'msj' : 'no hay usuarios'}, 404
+    allusers = User.query.all()
+    users= list(map(lambda user : user.serialize(),allusers))
+
+    if users== []:
+        return { 'msj' : 'no hay usuarios'}, 404
+
+
+    
     return jsonify(users), 200
 
 @app.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.get(user_id)
-    user = user.serialize()
-    return jsonify(user), 200
+    
+
+    unusuario =User.query.filter_by(id=user_id).first()
+
+    if unusuario is None:
+        return { 'msg' : 'no existe'}, 404
+
+
+    return jsonify( unusuario.serialize()), 200
+
+
 
 
 
@@ -69,7 +83,7 @@ def get_user(user_id):
 # Planetas
 
 
-@app.route('/planetas', methods=['GET'])
+@app.route('/planeta', methods=['GET'])
 def handle_planetas():
 
     allplanetas = Planets.query.all()
@@ -81,9 +95,9 @@ def handle_planetas():
     return jsonify(planetasList), 200
 
 @app.route('/planeta/<int:planeta_id>', methods=['GET'])
-def un_planeta(planets_id):
+def un_planeta(planeta_id):
 
-    unplaneta =Planets.query.filter_by(id=planets_id).first()
+    unplaneta =Planets.query.filter_by(id=planeta_id).first()
 
     if unplaneta is None:
         return { 'msj' : 'no existe'}, 404
@@ -92,47 +106,45 @@ def un_planeta(planets_id):
     return jsonify( unplaneta.serialize()), 200
 
 
-@app.route('/planeta', methods=['POST'])
-def crear_un_planeta():
-    body = json.loads(request.data)
+@app.route('/planeta', methods=['POST']) # aqui definimos la ruta 
+def crear_un_planeta():                # definimos la funcion para crear un planeta
+    body = json.loads(request.data)    # obtenemos los campos del planeta desde postman o el front
     nuevo_planeta = Planets(
         diametro = body["diametro"],
         nombre = body["nombre"],
-        clima = body["clima"],
+        clima = body["clima"],  # estos son los campos que guardaremos en el nuevo planeta
         gravedad = body["gravedad"],
         poblacion = body["poblacion"]
     )
-    db.session.add(nuevo_planeta)
-    db.session.commit()
+    db.session.add(nuevo_planeta) # agragamos el nuevo planeta a la base de datos
+    db.session.commit()# ejecutamos dicha actualizacion de la base de datos
     
-    return jsonify(nuevo_planeta.serialize()), 200
+    return jsonify(nuevo_planeta.serialize()), 200 # esta es la respuesta  que va a recibir postman o el front
         
 
 
+   
+   
+       
+
+
+
+@app.route('/personajes', methods=['POST']) # aqui definimos la ruta 
+def crear_un_personajes():                # definimos la funcion para crear un personajes
+    body = json.loads(request.data)    # obtenemos los campos del personajes desde postman o el front
+    nuevo_personajes = Personajes(
+        diametro = body["diametro"],
+        nombre = body["nombre"],
+        clima = body["clima"],  # estos son los campos que guardaremos en el nuevo personajes
+        gravedad = body["gravedad"],
+        poblacion = body["poblacion"]
+    )
+    db.session.add(nuevo_personajes) # agragamos el nuevo personajes a la base de datos
+    db.session.commit()# ejecutamos dicha actualizacion de la base de datos
     
-# Personajes
+    return jsonify(nuevo_personajes.serialize()), 200 # esta es la respuesta  que va a recibir postman o el front
+        
 
-
-@app.route('/personajes', methods=['GET'])
-def handle_personajes():
-
-    allpersonajes = Personajes.query.all()
-    personajesList = list(map(lambda personajes: personajes.serialize(),allpersonajes))
-    return jsonify(personajesList),200
-
-
-
-
-@app.route('/personajes/<int:personajes_id>', methods=['GET'])
-def un_personajes(personaje_id):
-
-    unpersonajes = Personajes.query.filter_by(id=personaje_id).first()
-
-    if unpersonajes is None:
-        return { 'msj' : 'no existe'}, 404
-
-
-    return jsonify( unpersonajes.serialize()), 200
 
 
 @app.route('/personajes/<int:personajes_id>', methods=['DELETE'])
@@ -146,46 +158,54 @@ def delete_personajes(personajes_id):
     
     return { 'msj' : 'no hay personajes'}, 404
 
-    # return jsonify(personajesList),200
-        
-
-
-@app.route('/personajes', methods=['POST'])
-def create_personaje():
-    request_body = json.loads(request.data)
-
-    existing_personaje = Personajes.query.filter_by(**request_body).first()
-
-    if existing_personaje:
-        return jsonify({"msj": "El personaje ya existe"}), 400
-
-    new_personaje = Personajes(**request_body)
-    db.session.add(new_personaje)
-    db.session.commit()
-    
-    return jsonify(new_personaje.serialize()), 200
-        
-    
+  
 
     
 # Vehiculos
 
+
+@app.route('/vehiculos', methods=['GET'])
+def handle_vehiculos():
+
+    allvehiculos =  Vehiculos.query.all()
+    vehiculosList = list(map(lambda p: p.serialize(),allvehiculos))
+
+    if vehiculosList == []:
+        return { 'msj' : 'no hay vehiculos'}, 404
     
-# @app.route('/vehiculos', methods=['GET'])
-# def get_vehiculos():
+    return jsonify(vehiculosList), 200
 
-#     allvehiculos = vehiculos.query.all()
-#     allvehiculos = list(map(lambda vehiculos: vehiculos.serialize(),vehiculos))
+@app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
+def un_vehiculos(vehiculos_id):
 
-#     return jsonify(vehiculos), 200
+    unvehiculos = Vehiculos.query.filter_by(id=vehiculos_id).first()
 
-# @app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
-# def get_vehiculos_id(vehiculos_id):
+    if unvehiculos is None:
+        return { 'msj' : 'no existe'}, 404
 
-#     vehiculo = vehiculos.query.get(vehiculos_id)
-#     vehiculo = vehiculos.serialize()
 
-    return jsonify(vehiculo), 200
+    return jsonify( unvehiculos.serialize()), 200
+
+
+@app.route('/vehiculos', methods=['POST']) # aqui definimos la ruta 
+def crear_un_vehiculos():                # definimos la funcion para crear un vehiculo
+    body = json.loads(request.data)    # obtenemos los campos del vehiculo desde postman o el front
+    nuevo_vehiculos = Vehiculos(
+        diametro = body["diametro"],
+        nombre = body["nombre"],
+        clima = body["clima"],  # estos son los campos que guardaremos en el nuevo vehiculo
+        gravedad = body["gravedad"],
+        poblacion = body["poblacion"]
+    )
+    db.session.add(nuevo_vehiculos) # agragamos el nuevo vehiculo a la base de datos
+    db.session.commit()# ejecutamos dicha actualizacion de la base de datos
+    
+    return jsonify(nuevo_vehiculos.serialize()), 200 # esta es la respuesta  que va a recibir postman o el front
+        
+
+# 
+
+
 
 @app.route('/vehiculos/<int:id>', methods=['DELETE'])
 def delete_vehiculos(id):
@@ -194,35 +214,41 @@ def delete_vehiculos(id):
     return jsonify({ "message": "Vehiculos DELETED" }), 200
 
 
-
-
-
-
-
-    unvehiculos = Vehiculos.query.filter_by(id=vehiculos_id).first()
-
-    if unvehiculos is None:
-        return { 'msj' : 'no existe'}, 404
-
-
    
-
-
-#  @app.route('/vehiculos', methods=['POST'])
-# def crear_un_vehiculo():
-#     body = json.loads(request.data)
-
-#     nuevo_vehiculo =Vehiculos(
-#         manufacturer = body["manufacturer"],
-#         cost_in_credits = body["cost_in_credits"],
-#         length = body[" length "],
-#          crew = body["crew"],
-#         passengers = body["passengers"]
-#     )
-#     db.session.add(nuevo_vehiculo)
-#     db.session.commit()
     
-#     return jsonify({"msg":"planeta agregado con exito"}), 200
+@app.route('/vehiculos', methods=['GET'])
+def get_vehiculos():
+
+    allvehiculos = Vehiculos.query.all()
+    allvehiculos = list(map(lambda vehiculos: vehiculos.serialize(),allvehiculos))
+
+    return jsonify(allvehiculos), 200
+
+@app.route('/vehiculos/<int:vehiculos_id>', methods=['GET'])
+def get_vehiculos_id(vehiculos_id):
+
+    vehiculo = Vehiculos.query.get(vehiculos_id)
+    vehiculo = vehiculo.serialize()
+
+    return jsonify(vehiculo), 200
+
+
+
+@app.route('/vehiculos', methods=['POST'])
+def crear_un_vehiculo():
+    body = json.loads(request.data)
+
+    nuevo_vehiculo =Vehiculos(
+        manufacturer = body["manufacturer"],
+        cost_in_credits = body["cost_in_credits"],
+        length = body[" length "],
+         crew = body["crew"],
+        passengers = body["passengers"]
+    )
+    db.session.add(nuevo_vehiculo)
+    db.session.commit()
+    
+    return jsonify({"msg":"planeta agregado con exito"}), 200
         
         
 # Naves
@@ -256,7 +282,7 @@ def un_naves(naves_id):
 @app.route('/naves', methods=['POST'])
 def crear_un_naves():
     body = json.loads(request.data)
-    nuevo_naves = Planets(
+    nuevo_naves = Naves(
         manufacturer = body["manufacturer"],
         cost_in_credits = body["cost_in_credits"],
         length = body[" length "],
@@ -269,10 +295,6 @@ def crear_un_naves():
     return jsonify({"msj":"nave agregado con exito"}), 200
 
 
-
-
-
-    
 
 # Favoritos
 
@@ -288,8 +310,14 @@ def get_favoritos():
 @app.route('/favoritos/<int:id>', methods=['GET'])
 def select_fav(id):
     favoritos = Favoritos.query.filter_by(user_id = id).all()
+
+    if favoritos == [] :
+        return ({ "msj": "no hay usuario" }), 404
+    
     favoritos_user = [favoritos.serialize() for favoritos in favoritos]
+
     return jsonify(favoritos_user), 200
+
 
 @app.route('/favoritos', methods=['POST'])
 def new_favoritos():  
@@ -300,28 +328,41 @@ def new_favoritos():
     favoritos.people_id = datos['personajes_id']
     favoritos.planet_id = datos['planet_id']
     favoritos.vehiculos_id = datos['vehiculos_id']
-    favoritos.vaves_id = datos['naves_id']
+    favoritos.naves_id = datos['naves_id']
     favoritos.save()
     return jsonify(favoritos.serialize()), 201
 
-@app.route('/favorite/people', methods=['POST'])
-def new_favoritepeople(): 
+@app.route('/favoritos/personajes', methods=['POST'])
+def new_favoritospersonaje(): 
     datos = request.get_json()
-    favoritos = Favoritos()
-    favoritos.user_id = datos['user_id']
-    favoritos.people_id = datos['people_id']
-    favoritos.save()
-    return jsonify(favoritos.serialize()), 201
+    # favoritos = Favoritos()
+    newfavorito=Favoritos(
+    user_id = datos['user_id'],
+    personajes_id = datos['personajes_id']
+    )
+
+
+    db.session.add(newfavorito)
+    db.session.commit()
+
+    
+    return{"msg":"favoritocreado"}, 200
+
 
 @app.route('/favoritos/planet', methods=['POST'])
 def new_favoritosplanet(): 
     datos = request.get_json()
-    favoritos = Favoritos()
-    favoritos.user_id = datos['user_id']
-    favoritos.planet_id = datos['planet_id']
-    favoritos.save()
-    return jsonify(favoritos.serialize()), 201
+   
+    newfavorito =Favoritos(
+    user_id = datos['user_id'],
+    planets_id = datos['planet_id']
+    )
 
+    db.session.add(newfavorito)
+    db.session.commit()
+
+    return{"msg":"favoritocreado"}, 200
+    
 @app.route('/favoritos/naves', methods=['POST'])
 def new_favoritosnaves(): 
     datos = request.get_json()
@@ -333,15 +374,17 @@ def new_favoritosnaves():
    
 @app.route('/favoritos/<int:user_id>/planet/<int:planet_id>', methods=['DELETE'])
 def delete_favoritosplanet(planet_id, user_id):
-    favorito = Favoritos.query.filter_by(planet_id=planet_id,user_id=user_id).first()
+    favorito = Favoritos.query.filter_by(planets_id=planet_id,user_id=user_id).first()
+
     if favorito: 
         db.session.delete(favorito)
         db.session.commit()
         return jsonify({ "msj": "FavPlanet DELETED" }), 200
 
 @app.route('/favoritos/<int:user_id>/personajes/<int:personaje_id>', methods=['DELETE'])
-def delete_favoritospersonajes(user_id, id):
-    favoritos = Favoritos.query.filter_by(personajes_id =id,user_id =user_id).first()
+def delete_favoritospersonajes(user_id, personaje_id):
+    favoritos = Favoritos.query.filter_by(personajes_id =personaje_id,user_id =user_id).first()
+    
     if favoritos:
         db.session.delete(favoritos)
         db.session.commit()
